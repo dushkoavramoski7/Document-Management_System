@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html  lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<style>
+    body{
+        font-family: Arial, Helvetica, sans-serif;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    table {
+        font-family: Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table td, table th {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    table tr:nth-child(even){background-color: #f2f2f2;}
+
+    table tr:hover {background-color: #ddd;}
+
+    table th{
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+
+    }
+    .doc_bymonth_year th{
+        background-color: whitesmoke;
+    }
+    small{
+        display: block;
+    }
+    button {
+        float: left;
+        display: inline-block;
+        padding: 10px;
+        background: lightslategray;
+        border: none;
+        margin-bottom: 20px;
+        color: white;
+        cursor: pointer
+    }
+    select{
+        padding: 10px;
+        background:gainsboro;
+        border:none;
+        margin-bottom: 20px;
+        cursor: pointer
+    }
+    input{
+        padding: 10px;
+        background: gainsboro;
+        border:none;
+        margin-bottom: 20px;
+        cursor: pointer
+    }
+
+</style>
+<body>
+
+<a href="/home" style="float:left; margin-left: 20px; margin-top: 20px; text-decoration: none;  font-weight: bold">Home</a>
+
+<form th:method="get" th:action="@{/client}" style="display: inline-block; float: right; margin-top: 10px">
+    <select name="client"  onchange="this.form.submit();" >
+        <option value="" selected disabled hidden>-- Select client -- </option>
+        <option th:each="client : ${clients}" th:value="${client.charAt(0)}" th:text="${client.substring(2, client.length())}" name="client"></option>
+    </select>
+</form>
+
+
+<span th:if="${document.size() > 0}">
+<table class="doc_bymonth_year" style="margin-bottom: 40px">
+<thead>
+<tr>
+    <th>Име вработен</th>
+    <th>Презиме вработен</th>
+    <th>Оддел</th>
+    <th>Вкупно доставени документи <br> <span style="font-size: 10px">на вработениот</span></th>
+    <th>Реализирани документи <br> <span style="font-size: 10px">од вработениот</span></th>
+    <th>Извршена промена <br> <span style="font-size: 10px">врз рекорди на следење</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td th:text="${document[0].getIme_vraboten()}">ime</td>
+    <td th:text="${document[0].getPrezime_vraboten()}">prezime</td>
+    <td th:text="${document[0].getIme_oddel()}">oddel</td>
+    <td th:text="${document[0].getDostaveni_dokumenti_na_vraboteniot_vo_oddelot()}">vkupno</td>
+    <td th:text="${document[0].getRealizirani_baranja_od_vraboteniot_vo_oddelot()}">realizirano</td>
+    <td th:text="${rns_promeneti[0].getIzvrsenaPromenaVrzRekordiNaSledenje()}"></td>
+</tr>
+</tbody>
+</table>
+</span>
+
+
+<table>
+    <thead>
+    <tr>
+        <th>Клиент</th>
+        <th>Предмет на документот</th>
+        <th>Датум доставен</th>
+        <th>Последна промена</th>
+        <th>Статус</th>
+        <th>Прикажи повеќе</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="doc: ${zadadeni}" style="margin-bottom: 5px">
+        <td th:text="${doc.getIme()}">Клиент</td>
+        <td th:text="${doc.getPredmet_na_dokument()}">Предмет на документот</td>
+        <td th:inline="text">
+            [[${doc.getDatum_primen}]]
+            <small th:text="${doc.getDatum_primenDen()}"></small>
+        </td>
+        <td th:inline="text">
+            [[${doc.getPosledna_napravena_promena()}]]
+            <small th:text="${doc.getPosledna_napravena_promenaDen()}"></small>
+        </td>
+        <td th:text="${doc.getStatus_dokument().name()}" class="statusCode">Статус</td>
+        <td style="text-align: center"><a th:href="@{'/document/employee/{id}' (id=${doc.getId_dokument()})}" style="text-decoration: none; font-weight: bold;"  class="btn btn-primary btn-sm" role="button">Прикажи повеќе</a></td>
+    </tr>
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

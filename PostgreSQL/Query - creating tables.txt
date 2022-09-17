@@ -1,0 +1,157 @@
+
+    create schema DMS_project;
+
+    -- Klient (id_klient, kompanija, ime)
+    create table Klient(
+        id_klient serial,
+        kompanija varchar(100) null,
+        ime varchar(100) not null,
+        constraint pk_klient primary key (id_klient)
+    );
+
+    insert into Klient (ime) values ('Dushko'), ('Marko'),('Stanko'),('Petre'),('Filip');
+
+    select * from Klient;
+
+
+    -- Oddel (id_oddel, ime_oddel)
+    create table Oddel(
+      id_oddel varchar(5),
+      ime_oddel varchar(100) not null,
+      constraint pk_oddel primary key (id_oddel),
+      constraint ck_oddel check (length(id_oddel) = 5)
+    );
+
+    insert into Oddel values ('10000', 'HR')
+                            ,('20000', 'Drzavni Sovetnici')
+                            ,('30000', 'Sektor za visoko obrazovanie')
+                            ,('31000', 'Oddelenie za visoko obrazovanie')
+                            ,('32000', 'Oddelenie za finansiranje na visoko obrazovanie')
+                            ,('40000', 'Sektor za nauka i inovacii');
+
+    select * from Oddel;
+    alter table Oddel
+alter column id_oddel  type varchar(5);
+
+
+    -- Vraboten (id_vraboten, id_oddel*(Oddel), ime_vraboten, prezime_vraboten)
+    create table Vraboten (
+        id_vraboten serial,
+        id_oddel varchar(5) not null,
+        ime_vraboten varchar(100) not null,
+        prezime_vraboten varchar(100) not null,
+        constraint pk_vraboten primary key (id_vraboten),
+        constraint fk_oddel_vraboten foreign key (id_oddel) references Oddel (id_oddel) on delete restrict on update cascade
+    );
+
+    alter table Vraboten
+alter column id_oddel  type varchar(5);
+
+    insert into Vraboten (id_oddel, ime_vraboten, prezime_vraboten) values ('10000', 'Mitra', 'Mitrevska')
+                                                                            ,('20000', 'Filip', 'Filipovski')
+                                                                            ,('31000', 'Ilija', 'Ilievski')
+                                                                            ,('32000', 'Petar', 'Petrovski')
+                                                                            ,('40000', 'Stanka', 'Stankovska');
+    select * from Vraboten;
+
+
+
+    -- Dokument (doc_id, id_klient*(Klient), id_vraboten*(Vraboten),
+    -- dostaven_file, tip_na_dokument, predmet_na_dokumentot)
+    create table Dokument(
+        id_dokument serial,
+        id_klient integer not null,
+        id_vraboten integer not null,
+        dostaven_file varchar(200) not null,
+        tip_na_dokument varchar(10) not null,
+        predmet_na_dokument varchar(100) not null,
+        datum_primen timestamp not null default localtimestamp,
+        constraint pk_dokument primary key (id_dokument),
+        constraint fk_dostaven_od_klient foreign key (id_klient) references Klient(id_klient) on delete cascade on update cascade,
+        constraint fk_primen_od_vraboten foreign key (id_vraboten) references Vraboten(id_vraboten) on delete restrict on update cascade,
+        constraint ck_tip_dokument check ( tip_na_dokument ilike ANY(ARRAY['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt','.ppt', '.pptx']))
+    );
+
+-- alter table Dokument
+-- alter column tip_na_dokument type varchar(200);
+
+
+    insert into Dokument (id_klient, id_vraboten, dostaven_file, tip_na_dokument, predmet_na_dokument, datum_primen)  values
+    (1,1, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\dogovor4.pdf', '.pdf', 'Sklucuvanje na dogovor za rabotno delo vo kompanija DM', now()-interval '1 month'),
+    (1,1, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\dogovor.pdf', '.pdf', 'Sklucuvanje na dogovor za rabotno delo')
+    ,(1,2, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\molba.pdf', '.pdf', 'Molba')
+    ,(2,3, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\potvrda1.pdf', '.pdf', 'Potvrda za redoven student')
+    ,(2,1, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\obrazec_za_popolnuvanje.pdf', '.pdf', 'Obrazec')
+    ,(3,4, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\UPPI.pdf', '.pdf', 'Uverenie za polozeni ispiti')
+    ,(4, 4, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\izjava1.pdf', '.pdf', 'Izjava za koristenje na podatocite')
+    ,(5, 4, 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\izjava2.txt', '.pdf', 'Izjava za identichnost na podatocite');
+
+    select * from Dokument;
+
+    -- Rekord_na_sledenje (doc_id*(Dokument), broj_rekord, id_klient*(Klient),
+    -- id_vraboten*(Vraboten), Datum_primen, Datum_dostavuvanje, Datum_promena,
+    -- status_na_dokument, odgovor_file,  komentar, promena)
+
+    create table Rekord_na_sledenje(
+        id_rekord serial,
+        id_dokument integer not null,
+        id_klient integer not null,
+        id_vraboten integer null,
+        datum_dostavuvanje timestamp null,
+        datum_promena timestamp null,
+        status_dokument varchar(100) not null,
+        odgovor_file varchar(100) null,
+        komentar varchar(100) null,
+        promena varchar(100) null,
+        constraint pk_rekord_na_sledenje primary key (id_rekord),
+        constraint fk_rekod_na_sledenje_na_dokument foreign key (id_dokument) references Dokument(id_dokument) on delete cascade on update cascade ,
+        constraint fk_se_odnesuva_na_klient foreign key (id_klient) references Klient(id_klient) on delete restrict on update cascade ,
+        constraint pk_promenet_od_vraboten foreign key (id_vraboten) references Vraboten(id_vraboten) on delete restrict on update cascade,
+        constraint ck_datum_primen check (datum_dostavuvanje::date <= now()::date),
+        constraint ck_datum_promena check (datum_promena::date <= now()::date)
+    );
+select * from Dokument;
+-- alter table Rekord_na_sledenje
+-- add column content bytea;
+-- alter table Rekord_na_sledenje
+-- add column tip_na_dokument varchar(200);
+
+
+-- alter table Dokument
+-- add column content bytea;
+
+    insert into Rekord_na_sledenje (id_dokument, id_klient, id_vraboten, datum_dostavuvanje, datum_promena, status_dokument, odgovor_file, komentar, promena)
+    values(5,3,4,null, now(),'Realizirano', null, 'Baranjeto e realizirano', null);
+    values (2,1,2,null, now(), 'Realizirano', null, 'Realizirano baranje na klientot', null);
+    values (8,1,1,null, now(), 'Realizirano', null, 'Realizirano', null);
+     values (5,3,4,null, now(), 'Vo obrabotka', null, 'Dokumentot se naogja vo obrabotka', null);
+
+
+   -- insert into Rekord_na_sledenje (id_dokument, id_klient, id_vraboten, datum_dostavuvanje, datum_promena, status_dokument, odgovor_file, komentar, promena) VALUES --(1,1,1,null,now(),'Podneseno baranje',null,null,null),
+                                                                                                                                                                     --(1,1,1,null,now(),'Vo obrabotka', null,'Baranjeto e isprateno za obrabotka vo oddel-ot za covecki resursi',null),
+                                                                                                                                                                     --(1,1,1,now(), now(), 'Dostaven odgovor', 'C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\sklucen_dogovor.pdf', 'Ispraten e odgovor do klientot', 'Prikachen e odgovor file-ot so skluceniot dogovor'),
+                                                                                                                                                                     --(1,1,1,null, now(), 'Realizirano', null, 'Realizirano baranjeto dostaveno od korisnikot', null),
+                                                                                                                                                                     --(2,1,2,null,now(), 'Podneseno baranje', null,null, null ),
+                                                                                                                                                                     --(2,1,2,null,now(),'Vo obrabotka', null, 'Baranjeto se naogja vo obrabotka', null),
+                                                                                                                                                                     --(3,2,3,null, now(), 'Podneseno baranje',null, null, null),
+                                                                                                                                                                     --(4,2,1,null,now(),'Podneseno baranje', null, null,null),
+                                                                                                                                                                     --(4,2,1, null,now(), 'Vo obrabotka', null,'Baranjeto e isprateno vo obrabotka do nadlezniot oddel', null),
+                                                                                                                                                                     --(4,2,1,now(), now(), 'Dostaven odgovor','C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\odgovor_file.pdf','Ispraten e odgovor do klientot', 'Prikacen e odgovor file'),
+                                                                                                                                                                     --(5,3,4,null,now(), 'Podneseno baranje', null, null,null),
+                                                                                                                                                                    --(6,4,4,null,now(),'Podneseno baranje', null, null,null),
+                                                                                                                                                                     --(6,4,4, null,now(), 'Vo obrabotka', null,'Baranjeto e isprateno vo obrabotka do nadlezniot oddel', null)
+                                                                                                                                                                     --(6,4,4,now(), now(), 'Dostaven odgovor','C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\odgovor_file2.pdf','Ispraten e odgovor do klientot', 'Prikacen e odgovor file'),
+                                                                                                                                                                     --(6,4,4,null, now(), 'Realizirano', null, 'Realizirano baranjeto dostaveno od korisnikot', null),
+                                                                                                                                                                    --(7,5,4,null,now(),'Podneseno baranje', null, null,null),
+                                                                                                                                                                     --(7,5,4, null,now(), 'Vo obrabotka', null,'Baranjeto e isprateno vo obrabotka do nadlezniot oddel', null)
+                                                                                                                                                                     --(7,5,4,now(), now(), 'Dostaven odgovor','C:\Users\Dusko\DataGripProjects\Document Managment System - BNP\odgovor_file2.pdf','Ispraten e odgovor do klientot', 'Prikacen e odgovor file'),
+                                                                                                                                                                    -- (7,5,4,null, now(), 'Realizirano', null, 'Realizirano baranjeto dostaveno od korisnikot', null),
+
+
+
+
+
+
+
+
+

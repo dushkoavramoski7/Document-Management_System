@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html  lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detailed View Employee</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+<style>
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  table {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  table td, table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+
+  table tr:nth-child(even){background-color: #f2f2f2;}
+
+  table tr:hover {background-color: #ddd;}
+
+  table th{
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+
+
+  }
+  small{
+    display: block;
+  }
+</style>
+<body>
+
+<a th:href="'/employee?employee=' + ${employee}" role="button"   class="btn btn-primary btn" type="submit" style="text-decoration:none;float:left; margin-left: 0px; margin-top: 15px; margin-bottom: 10px ;  font-weight: bold">Go Back</a>
+
+<br>
+<br>
+<br>
+<div class="form-row align-items-center" style="justify-content: center">
+  <div class="col-sm-3 my-1, form-group"  style="text-align: center;">
+    <label for="client">Клиент</label>
+    <input id="client" type="text" class="form-control"  th:placeholder="${DetailedViewDocument[0].getIme()}" readonly>
+  </div>
+  <div class="col-sm-3 my-1, form-group"  style="text-align: center;">
+    <label for="doc">Предмет на документот</label>
+    <input id="doc" type="text" class="form-control"  th:placeholder="${DetailedViewDocument[0].getPredmet_na_dokument()} ?: ''" readonly>
+  </div>
+  <div class="col-sm-3 my-1, form-group" style="text-align: center;">
+    <label for="dog">Датум кога е примен документот:</label>
+    <input name="dog" id="dog" class="form-control" type="text" th:placeholder="${DetailedViewDocument[0].getDatum_primen() + ', ' + DetailedViewDocument[0].getDatum_primenDen()}" readonly>
+  </div>
+  <div class="col-sm-3 my-1, form-group" style="text-align: center;">
+    <label for="stat">Статус на документот: </label>
+    <input name="stat" id="stat" class="form-control" type="text" th:placeholder="${DetailedViewDocument[0].getStatus_dokument().name()}" readonly>
+  </div>
+</div>
+<hr>
+<div>
+  <table id="list_doc">
+    <thead>
+    <tr>
+      <th scope="col">Датум промена</th>
+      <th scope="col">Статус</th>
+      <th scope="col">Прикажи повеќе</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr scope="row" th:each="log: ${DetailedViewDocument}" style="margin-bottom: 5px">
+      <td th:inline="text">
+        [[${log.getDatum_promena()}]]
+        <small class="d-block" th:text="${log.getDatum_promenaDen()}"></small>
+      </td>
+      <td th:text="${log.getStatus_dokument().name()}" class="statusCode">Статус</td>
+      <td><a th:href="@{'/document/log/{id_log}' (id_log=${log.getId_rekord()})}" style="text-decoration: none; font-weight: bold; " >Прикажи повеќе</a></td>
+    </tr>
+    </tbody>
+  </table>
+
+
+  <div class="col mb-3">
+    <div class="row">
+      <div class="col-sm-12 col-md-12" >
+        <a th:href="@{'/document/add-record-form/{id_dokument}/{id_klient}' (id_dokument = ${DetailedViewDocument[0].getId_dokument()}, id_klient = ${DetailedViewDocument[0].getId_klient()})}"
+           class="btn btn-block btn-outline-primary add-product-btn">
+          Add new document record
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

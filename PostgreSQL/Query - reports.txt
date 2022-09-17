@@ -1,0 +1,249 @@
+
+-- Izvestai
+
+-- za site klientie, kolku dokumenti dostavile vo sekoj
+-- od mesecite i godinite zaedno so razlicnite statusi na baranjata
+create view promeni_grupirani_po_mesec_godina as
+select a.id_klient,
+          a.ime,
+          extract('month' from d.datum_primen) as mesec,
+           extract('year' from d.datum_primen) as godina,
+           count(a.id_dokument) as vkupno_dostaveni_dokuemnti_vo_mesecot,
+            sum(
+               case when (rns.status_dokument = 'COMPLETED')
+               then 1 else 0 end
+               ) as realizirani_baranja,
+           sum(
+               case when (rns.status_dokument = 'IN_PROGRESS')
+               then 1 else 0 end
+               ) as dokumenti_vo_obrabotka,
+            sum(
+               case when (rns.status_dokument = 'HAS_RESPONSE')
+               then 1 else 0 end
+               ) as dostaven_odgovor_na_baranjeto,
+           sum(
+               case when (rns.status_dokument = 'RECEIVED')
+               then 1 else 0 end
+               ) as podneseni_baranja
+    from rekord_na_sledenje as rns
+    join (
+        select k.id_klient,
+               k.ime,
+               d.id_dokument,
+               max(rns.datum_promena) as posledna_napravena_promena
+        from dokument as d
+                 join klient as k on d.id_klient = k.id_klient
+                 join rekord_na_sledenje as rns on d.id_dokument = rns.id_dokument
+        group by k.id_klient, k.ime, d.id_dokument
+    ) as a on rns.id_klient = a.id_klient and rns.id_dokument = a.id_dokument and rns.datum_promena = a.posledna_napravena_promena
+    join dokument as d on rns.id_dokument = d.id_dokument
+    group by 1,2,3,4
+order by 1,3 desc ;
+
+drop view promeni_grupirani_po_mesec_godina;
+
+
+
+
+-- za daden klient kolku dokumenti mu se naogjaat vo sekoj od statusite za celiot period
+create view promeni_vo_celiot_period as
+ select a.id_klient,
+        a.ime,
+           count(a.id_dokument) as vkupno_dostaveni_dokuemnti,
+            sum(
+               case when (rns.status_dokument = 'COMPLETED')
+               then 1 else 0 end
+               ) as realizirani_baranja,
+           sum(
+               case when (rns.status_dokument = 'IN_PROGRESS')
+               then 1 else 0 end
+               ) as dokumenti_vo_obrabotka,
+            sum(
+               case when (rns.status_dokument = 'HAS_RESPONSE')
+               then 1 else 0 end
+               ) as dostaven_odgovor_na_baranjeto,
+           sum(
+               case when (rns.status_dokument = 'RECEIVED')
+               then 1 else 0 end
+               ) as podneseni_baranja
+    from rekord_na_sledenje as rns
+    join (
+        select k.id_klient,
+                k.ime,
+               d.id_dokument,
+               max(rns.datum_promena) as posledna_napravena_promena
+        from dokument as d
+                 join klient as k on d.id_klient = k.id_klient
+                 join rekord_na_sledenje as rns on d.id_dokument = rns.id_dokument
+        group by k.id_klient,   k.ime, d.id_dokument
+    ) as a on rns.id_klient = a.id_klient and rns.id_dokument = a.id_dokument and rns.datum_promena = a.posledna_napravena_promena
+    join dokument as d on rns.id_dokument = d.id_dokument
+    group by 1,2
+order by 1;
+
+
+drop view promeni_vo_celiot_period;
+
+-- daden dokument kolku ima napraveni promeni
+
+select k.id_klient,
+       k.ime,
+       d.id_dokument,
+       d.predmet_na_dokument,
+       count(rns.id_rekord) as broj_na_napraveni_promeni
+    from dokument as d
+    join rekord_na_sledenje rns on d.id_dokument = rns.id_dokument
+    join klient k on d.id_klient = k.id_klient
+    group by 1,2,3,4
+order by 1;
+
+
+
+--  Promeni napraveni na dokumentite na daden klient vo tekovniot mesec vo tekovnata godina
+
+create view  Promeni_vo_tekoven_mesec as
+select a.id_klient,
+            a.ime,
+            extract('month' from now() ) as tekoven_mesec,
+            extract('year' from now() ) as tekovna_godina,
+            sum(
+                case when (extract('month' from d.datum_primen) = extract('month' from now()))
+                    and extract('year' from d.datum_primen) = extract('year' from now())
+                then 1 else 0
+                end
+           ) as dostaveni_dokuemnti_vo_tekoven_mesec,
+            sum(
+               case when (rns.status_dokument = 'COMPLETED'
+                   and  extract('month' from rns.datum_promena ) = extract('month' from now())
+                   and extract('year' from rns.datum_promena) = extract('year' from now())
+                   )
+               then 1 else 0 end
+               ) as realizirani_baranja,
+           sum(
+               case when (rns.status_dokument = 'IN_PROGRESS'
+                   and extract('month' from rns.datum_promena) = extract('month' from now())
+                   and extract('year' from rns.datum_promena) = extract('year' from now())
+                   )
+               then 1 else 0 end
+               ) as dokumenti_vo_obrabotka,
+            sum(
+               case when (rns.status_dokument = 'HAS_RESPONSE'
+                and  extract('month' from rns.datum_promena ) = extract('month' from now())
+                   and extract('year' from rns.datum_promena) = extract('year' from now())
+                   )
+               then 1 else 0 end
+               ) as dostaven_odgovor,
+           sum(
+               case when (rns.status_dokument = 'RECEIVED'
+                and  extract('month' from rns.datum_promena ) = extract('month' from now())
+                   and extract('year' from rns.datum_promena) = extract('year' from now())
+                   )
+               then 1 else 0 end
+               ) as podneseni_baranja
+    from rekord_na_sledenje as rns
+    join (
+        select k.id_klient,
+               k.ime,
+               d.id_dokument,
+               max(rns.datum_promena) as posledna_napravena_promena
+        from dokument as d
+                 join klient as k on d.id_klient = k.id_klient
+                 join rekord_na_sledenje as rns on d.id_dokument = rns.id_dokument
+        group by k.id_klient, k.ime, d.id_dokument
+    ) as a on rns.id_klient = a.id_klient and rns.id_dokument = a.id_dokument and rns.datum_promena = a.posledna_napravena_promena
+    join dokument as d on rns.id_dokument = d.id_dokument
+group by 1,2,3,4;
+
+
+drop view Promeni_vo_tekoven_mesec;
+
+
+-- select * from Promeni_vo_tekoven_mesec
+-- where id_klient=1;
+
+
+--  za sekoj od vrabotenite, kolku dokumenti primil
+create view vraboten_kolku_dokumenti_primil as
+select v.ime_vraboten,
+       v.prezime_vraboten,
+       o.ime_oddel,
+       count(d.id_dokument) as vraboten_primil_dokumenti
+from
+vraboten as v
+join dokument d on v.id_vraboten = d.id_vraboten
+join klient k on d.id_klient = k.id_klient
+join oddel o on v.id_oddel = o.id_oddel
+group by 1,2,3;
+
+drop view vraboten_kolku_dokumenti_primil;
+
+--  za sekoj od vrabotenite, na kolku rekordi izvrsil promena
+create view vraboten_kolku_rns_promenil as
+select v.id_vraboten,
+       v.ime_vraboten,
+       v.prezime_vraboten,
+       o.ime_oddel,
+       count(rns.id_rekord) as izvrsena_promena_vrz_rekordi_na_sledenje
+from
+vraboten as v
+join dokument d on v.id_vraboten = d.id_vraboten
+join klient k on d.id_klient = k.id_klient
+join oddel o on v.id_oddel = o.id_oddel
+join rekord_na_sledenje rns on d.id_dokument = rns.id_dokument
+group by 1,2,3,4;
+
+drop view vraboten_kolku_rns_promenil;
+
+--  za sekoj od vrabotenite, kolku dokumenti primil i kolku od niv bile usepsno realizirani po klienti
+create view vraboten_kolku_dokumenti_uspesno_realiziral as
+select v.id_vraboten,
+       v.ime_vraboten,
+       v.prezime_vraboten,
+       o.ime_oddel,
+      count(d.id_dokument) as dostaveni_dokumenti_na_vrabotenit_vo_oddelot,
+       sum (
+           case when(rns.status_dokument = 'COMPLETED')
+           then 1 else 0
+           end
+           ) as Realizirani_baranja_od_vraboteniot_vo_oddelot
+from rekord_na_sledenje as rns
+join (
+        select k.id_klient,
+               k.ime,
+               d.id_dokument,
+               max(rns.datum_promena) as posledna_napravena_promena,
+            count(d.id_dokument) as dostaveni_dokuemnti
+        from dokument as d
+                 join klient as k on d.id_klient = k.id_klient
+                 join rekord_na_sledenje as rns on d.id_dokument = rns.id_dokument
+        group by k.id_klient, k.ime, d.id_dokument
+    ) as a on rns.id_klient = a.id_klient and rns.id_dokument = a.id_dokument and rns.datum_promena = a.posledna_napravena_promena
+    join dokument as d on rns.id_dokument = d.id_dokument
+join vraboten v on d.id_vraboten = v.id_vraboten
+join oddel o on v.id_oddel = o.id_oddel
+group by 1,2,3,4;
+
+
+drop view vraboten_kolku_dokumenti_uspesno_realiziral;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

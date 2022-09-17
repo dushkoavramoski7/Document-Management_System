@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html  lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add new log for document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<style>
+    h1{
+        color: gray;
+    }
+    body{
+        font-family: Arial, Helvetica, sans-serif
+    }
+    #background {
+
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 120%;
+    }
+    #form{
+
+        margin-top: 130px;
+        margin-left: 198px;
+        width: 70%;
+        height: 120%;
+        background-color:  white;
+    }
+
+</style>
+<body>
+<button onclick="history.back()" role="button" class="btn btn-primary btn" style="float: left; margin-top: -115px; margin-left: 10px; font-weight: bolder">Go Back</button>
+
+<div id="background">
+
+    <div id="form">
+        <h3 style="text-align: center"> Форма за креирање на рекорд на следење</h3>
+        <h1 style="text-align: center" th:text="'Внеси нов рекорд на следење за документ:'"></h1>
+        <br>
+        <h2 style="text-align: center" th:text="${DocumentName.getPredmet_na_dokument()}"></h2>
+        <form action="/document/add-record" method="post" enctype="multipart/form-data">
+            <input type="hidden" id="id_dokument" name="id_dokument" th:value="${Dokument_id}">
+            <input type="hidden" id="id_klient" name="id_klient" th:value="${Klient_id}">
+            <input type="hidden" id="id_vraboten" name="id_vraboten" th:value="${Vraboten_id}">
+
+            <br>
+            <br>
+
+                <select name="status" class="custom-select custom-select mb-3" id="status">
+                    <option selected hidden disabled>Одбери статус</option>
+                    <option th:each="status : ${statuses}" th:text="${status}" th:value="${status}"></option>
+                </select>
+
+            <div class="custom-file mb-3">
+                    <input type="file" class="custom-file-input" id="file" name="file">
+                    <label class="custom-file-label" for="file">Прикачи документ - одговор</label>
+            </div>
+
+
+                <div class="form-group row">
+                    <label for="komentar" class="col-sm-2 col-form-label">Внеси коментар:</label>
+                    <div class="col-sm-10">
+                    <input class="form-control" type="text" id="komentar" name="komentar" placeholder="коментар">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="promena" class="col-sm-2 col-form-label">Внеси промена: </label>
+                    <div class="col-sm-10">
+                    <input class="form-control" type="text" id="promena" name="promena" placeholder="промена">
+                    </div>
+                </div>
+
+
+            <button class="btn btn-primary" type="submit">Submit form</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+<script>
+    $(".custom-file-input").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
+</script>
+</html>

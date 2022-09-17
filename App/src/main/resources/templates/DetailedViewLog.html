@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detailed view log</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<style>
+    h1{
+        color: gray;
+    }
+    body{
+        font-family: Arial, Helvetica, sans-serif
+    }
+    #background {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color:  white;
+    }
+    #form{
+
+        margin-top: 100px;
+        margin-left: 198px;
+        width: 70%;
+        height: 100%;
+        background-color:  white;
+    }
+    label{
+        font-weight: bold;
+    }
+</style>
+<body>
+
+<button onclick="history.back()" role="button" class="btn btn-primary btn" style="float: left; margin-top: -85px; margin-left: 10px; font-weight: bolder">Go Back</button>
+
+<div id="background">
+
+    <div id="form">
+        <h3 style="text-align: center"> Детален поглед на рекорд на следење </h3>
+        <h1 style="text-align: center" th:text="'Рекорд на следење за документ:' + ' ' + ${Log.getPredmet_na_dokument()}"></h1>
+        <br>
+        <br>
+        <div class="form-row align-items-center">
+            <div class="col-sm-3 my-1, form-group">
+                <label for="client">Клиент</label>
+                <input id="client" type="text" class="form-control"  th:placeholder="${Log.getIme()}" readonly>
+            </div>
+            <div class="col-sm-3 my-1, form-group">
+                <label for="kompanija">Компанија</label>
+                <input id="kompanija" type="text" class="form-control"  th:placeholder="${Log.getKompanija()} ?: ''" readonly>
+            </div>
+        </div>
+        <div class="form-row align-items-center">
+            <div class="col-sm-3 my-1">
+                <label for="ime">Одговорен вработен</label>
+                <input id="ime" type="text" class="form-control"  th:placeholder="${Log.getIme_vraboten()}" readonly>
+            </div>
+            <div class="col-sm-3 my-1">
+                <label for="prez">Презиме</label>
+                <input type="text" id="prez" class="form-control"  th:placeholder="${Log.getPrezime_vraboten()} ?: ''" readonly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="doc">Документ</label>
+            <input name="doc" id="doc" class="form-control" type="text" th:placeholder="${Log.getPredmet_na_dokument()}" readonly>
+        </div>
+        <span>Доставен фајл од клиентот:  </span><span th:if="${Log.getDostaven_file_od_klient()} == null"> нема доставен документ од клиент</span><a th:href="@{'/document/downloadFile/{id}' (id = ${Log.getId_dokument()})}" th:text="${Log.getDostaven_file_od_klient()}" th:download="${Log.getDostaven_file_od_klient()}"></a>
+        <br>
+        <br>
+        <div class="form-group">
+            <label for="dos">Датум кога е доставен документот од клиентот:</label>
+            <input name="dos" id="dos" class="form-control" type="text" th:placeholder="${#temporals.format(Log.getDatum_primen(), 'dd-MM-yyyy HH:mm')}" readonly>
+        </div>
+        <span>Доставен одговор од вработен:  </span><span th:if="${Log.getOdgovor_file()} == null">нема доставен одговор</span><a th:href="@{'/document/downloadFile/response/{id}' (id = ${Log.getId_rekord()})}" th:text="${Log.getOdgovor_file()}" th:download="${Log.getOdgovor_file()}"></a>
+        <br>
+        <br>
+        <div class="form-group">
+            <label for="dog">Датум кога е доставен одговор од вработен:</label>
+            <input name="dog" id="dog" class="form-control" type="text" th:placeholder="${#temporals.format(Log.getDatum_dostaven_odgovor(), 'dd-MM-yyyy HH:mm')} ?: 'нема доставен одговор'" readonly>
+        </div>
+        <div class="form-group">
+            <label for="status">Статус на документот</label>
+            <input name="status" id="status" class="form-control" type="text" th:placeholder="${Log.getStatus_dokument().name()}" readonly>
+        </div>
+        <div class="form-group">
+            <label for="dop">Датум кога е направена промената:</label>
+            <input name="dop" id="dop" class="form-control" type="text" th:placeholder="${#temporals.format(Log.getDatum_promena(), 'dd-MM-yyyy HH:mm')}" readonly>
+        </div>
+        <div class="form-group">
+            <label for="promena">Направена промена: </label>
+            <input name="status" id="promena" class="form-control" type="text" th:placeholder="${Log.getPromena()} ?: 'нема направена промена'" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="komentar">Оставен коментар од вработен: </label>
+            <input name="status" id="komentar" class="form-control" type="text" th:placeholder="${Log.getKomentar()} ?: 'нема оставен коментар од вработен'" readonly>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

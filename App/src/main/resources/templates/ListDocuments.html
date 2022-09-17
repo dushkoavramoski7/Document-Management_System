@@ -1,0 +1,121 @@
+<!doctype html>
+<html  lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Documents from client</title>
+  </head>
+  <style>
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+    table {
+      font-family: Arial, Helvetica, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    table td, table th {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    table tr:nth-child(even){background-color: #f2f2f2;}
+
+    table tr:hover { background-color: whitesmoke}
+
+    table th{
+      padding-top: 12px;
+      padding-bottom: 12px;
+      text-align: left;
+      background-color: whitesmoke;
+      border: 1px solid gainsboro;
+    }
+    .doc_bymonth_year th{
+      background-color: gainsboro;
+    }
+    small{
+      display: block;
+    }
+    button {
+      float: left;
+      display: inline-block;
+      padding: 10px;
+      background-color: gainsboro;
+      border: none;
+      margin-bottom: 20px;
+      color: white;
+      cursor: pointer
+    }
+    select{
+      padding: 10px;
+      background-color: gainsboro;
+      border:none;
+      margin-bottom: 20px;
+      color: white;
+      cursor: pointer
+    }
+    input{
+      padding: 10px;
+      border:none;
+      margin-bottom: 20px;
+      color: white;
+      cursor: pointer
+    }
+
+  </style>
+  <body>
+
+  <a href="/home" role="button" class="btn btn-outline-primary btn-sm"
+     style="text-decoration:none;float:left; margin-left: 20px; margin-top: 7px; text-decoration: none;
+      font-weight: bold"> Home </a>
+
+  <th:block sec:authorize="hasRole('ROLE_USER')">
+  <form th:method="GET" th:action="@{'/document/addDocument/{client}' (client = ${client})}" style="margin-top: 10px; margin-right: 10px">
+    <input type="submit" value="Add document" role="button" class="btn btn-primary btn" style="float: right;color: white; font-weight: bold">
+  </form>
+  </th:block>
+
+  <form th:method="GET" action="/reports" style="margin-top: 10px; margin-right: 15px">
+    <input type="submit" value="Show reports & charts" role="button" class="btn btn-primary btn" style="float: right;color: white; font-weight: bold; margin-right: 10px">
+  </form>
+
+  <table id="table">
+    <thead>
+            <tr>
+              <th:block sec:authorize="hasRole('ROLE_ADMIN')">  <th>Клиент</th> </th:block>
+              <th>Име на документ</th>
+              <th>Оддел</th>
+              <th>Датум доставен</th>
+              <th>Последна промена</th>
+              <th>Статус</th>
+              <th>Прикажи повеќе</th>
+            </tr>
+    </thead>
+    <tbody>
+            <tr th:each="doc: ${list_dokuemts_klient}" style="margin-bottom: 5px">
+              <th:block sec:authorize="hasRole('ROLE_ADMIN')"> <td th:text="${doc.getIme()}">Клиент</td> </th:block>
+              <td th:text="${doc.getPredmet_na_dokument()}" style="width: 200px">Предмет на документот</td>
+              <td th:text="${doc.getIme_oddel()}" style="font-size: 10px">Оддел</td>
+              <td th:inline="text">
+                <span style="font-weight: bold; color: rgb(0,123,255)">[[${doc.getDatum_primen}]]</span>
+                <small th:text="${doc.getDatum_primenDen()}"></small>
+              </td>
+              <td th:inline="text">
+                <span style="font-weight: bold;color: rgb(0,123,255)">[[${doc.getPosledna_napravena_promena()}]]</span>
+                <small th:text="${doc.getPosledna_napravena_promenaDen()}"></small>
+              </td>
+              <td th:text="${doc.getStatus_dokument().name()}" class="statusCode" style="font-weight: bolder">Статус</td>
+              <td><a th:href="@{'/document/{id}' (id=${doc.getId_dokument()})}" style="text-decoration: none; font-weight: bold; font-size: small " >Прикажи повеќе</a></td>
+            </tr>
+    </tbody>
+  </table>
+
+  </body>
+
+</html>
